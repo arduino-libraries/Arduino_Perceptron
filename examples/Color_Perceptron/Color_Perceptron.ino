@@ -15,7 +15,7 @@ The sketch will train a perceptron using these examples, and then classify objec
 #include <Arduino_Perceptron.h>
 
 const int   NUM_INPUTS          = 3;      // Classifier has 3 inputs - red, green and blue levels
-const int   CLASSES             = 2;      // The perceptron only has 2 possible classes (-1 and 1)
+const int   CLASSES             = 2;      // The perceptron only has 2 possible outputs (-1 and 1)
 const int   EXAMPLES            = 50;     // Number of samples for each object
 const int   MAX_EPOCHS          = 250;    // Maximum training iterations
 const float LEARNING_RATE       = 0.001;  // Perceptron learning rate
@@ -25,6 +25,7 @@ float       color[NUM_INPUTS];
 String      label[CLASSES] = {"object A", "object B"};
 
 Perceptron  perceptron(NUM_INPUTS, LEARNING_RATE);
+
 
 void setup() {
   Serial.begin(9600);
@@ -101,6 +102,7 @@ void printLabel(int output) {
   }
   Serial.println();
 }
+
 
 void readColor(float color[]) {
   int red, green, blue, proximity, colorTotal = 0;
