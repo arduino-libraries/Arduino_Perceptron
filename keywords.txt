@@ -1,0 +1,21 @@
+#######################################
+# Syntax Coloring Map For Arduino_Perceptron
+#######################################
+# Class
+#######################################
+
+Arduino_Perceptron	KEYWORD1
+Perceptron	KEYWORD1
+
+#######################################
+# Methods and Functions
+#######################################
+
+addExample	KEYWORD2
+classify	KEYWORD2
+
+clearAllClasses	KEYWORD2
+
+#######################################
+# Constants
+#######################################
