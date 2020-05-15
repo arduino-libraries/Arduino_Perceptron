@@ -1,23 +1,25 @@
 /*
 
-  Perceptron example
+Color_Perceptron.ino
 
-  Hardware: Arduino Nano BLE Sense
+Perceptron color classification example
 
-  Usage: Follow the prompts in the Serial Monitor and show two objects of different colors to the color sensor onboard the Arduino.
-  The sketch will train a perceptron using these examples, and then classify objects you show it in the future.
+Hardware: Arduino Nano 33 BLE Sense
+
+Usage: Follow the prompts in the Serial Monitor and show two objects of different colors to the color sensor onboard the Arduino.
+The sketch will train a perceptron using these examples, and then classify objects you show it in the future.
 
 */
 
 #include <Arduino_APDS9960.h>
 #include <Arduino_Perceptron.h>
 
-const int   NUM_INPUTS          = 3;     // Classifier input is color sensor data; red, green and blue levels
-const int   CLASSES             = 2;     // The perceptron only has 2 possible classes (-1 and 1)
-const int   EXAMPLES            = 50;   // Number of samples for each object
-const int   MAX_EPOCHS          = 250;   // Maximum training iterations
-const float LEARNING_RATE       = 0.001; // Perceptron learning rate
-const int   THRESHOLD           = 5;     // Color sensor light threshold
+const int   NUM_INPUTS          = 3;      // Classifier has 3 inputs - red, green and blue levels
+const int   CLASSES             = 2;      // The perceptron only has 2 possible classes (-1 and 1)
+const int   EXAMPLES            = 50;     // Number of samples for each object
+const int   MAX_EPOCHS          = 250;    // Maximum training iterations
+const float LEARNING_RATE       = 0.001;  // Perceptron learning rate
+const int   THRESHOLD           = 5;      // Color sensor light threshold
 
 float       color[NUM_INPUTS];
 String      label[CLASSES] = {"object A", "object B"};
@@ -35,8 +37,8 @@ void setup() {
 
   Serial.println("Arduino perceptron");
 
-  // Get examples for the two possible outputs, -1 and 1
-  // ---------------------------------------------------
+  // Get color examples for the two objects
+  // --------------------------------------
   for (int output = -1; output < 2; output += 2) {
 
     Serial.print("Show me ");
@@ -61,6 +63,7 @@ void setup() {
   int epoch = 0;
   float accuracy = 0;
 
+  // Iterate until the perceptron is 99% accurate or we hit max epochs
   while (epoch < MAX_EPOCHS && accuracy < 0.99) {
     accuracy = perceptron.train();
     epoch++;
@@ -74,24 +77,23 @@ void setup() {
 
 
 void loop() {
-
   int output;
 
   // Wait for the object to move away again
   while (!APDS.proximityAvailable() || APDS.readProximity() == 0) {}
-
   Serial.println("Let me guess your object");
 
   // Wait for an object then read its color
   readColor(color);
-
   output = perceptron.classify(color);
 
   Serial.print("You showed me ");
   printLabel(output);
 }
 
+
 void printLabel(int output) {
+// Perceptron output can only be -1 or 1
   if (output ==  -1) {
     Serial.println(label[0]);
   } else {
