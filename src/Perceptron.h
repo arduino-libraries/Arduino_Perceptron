@@ -34,7 +34,7 @@ public:
   void addExample(const float input[], int class_);
   int classify(const float input[]);
   float train();
-  void getWeights(float * weightArray);
+  void getWeights(float * weightArray, int arrayLength);
 
 private:
   int _inputLength;

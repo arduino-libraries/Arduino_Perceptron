@@ -22,7 +22,7 @@
 #include "utility/PerceptronNode.h"
 
 Perceptron::Perceptron(const int inputLength, float learningRate) :
-  _inputLength(inputLength),
+  _inputLength(inputLength+1), // inputs + bias
   _learningRate(learningRate),
   _weights(new float[_inputLength]),
   _examples(NULL)
@@ -39,8 +39,9 @@ Perceptron::~Perceptron()
 
 void Perceptron::addExample(const float input[], int class_)
 {
+
   // create new node
-  PerceptronNode* newNode = new PerceptronNode(input, _inputLength, class_);
+  PerceptronNode* newNode = new PerceptronNode(input, _inputLength-1, class_);
 
   // add new node to examples list
   if (_examples == NULL) {
@@ -65,9 +66,14 @@ void Perceptron::addExample(const float input[], int class_)
 int Perceptron::classify(const float input[])
 {
     float sum = 0;
-    for (int i = 0; i < _inputLength; i++) {
+
+    // Inputs
+    for (int i = 0; i < _inputLength-1; i++) {
       sum += input[i] * _weights[i];
     }
+
+    // Bias input is always 1
+    sum += 1 * _weights[_inputLength-1];
 
     // Activation function
     if (sum > 0) return 1;
@@ -75,8 +81,8 @@ int Perceptron::classify(const float input[])
 
 }
 
-void Perceptron::getWeights(float * weightArray){
-  for (int i = 0; i < _inputLength; i++) {
+void Perceptron::getWeights(float * weightArray,int arrayLength){
+  for (int i = 0; i < arrayLength; i++) {
     weightArray[i] = _weights[i];
   }
 }
@@ -92,13 +98,16 @@ float Perceptron::train()
 
     float inputs[_inputLength];
 
-    for (int i = 0; i < _inputLength; i++) {
+    // inputs
+    for (int i = 0; i < _inputLength-1; i++) {
       inputs[i] = node->input(i);
     }
 
+    // bias input is always 1
+    inputs[_inputLength-1] = 1;
+
     int guess = classify(inputs);
     float error = node->class_() - guess;
-
     if (error==0) {correct++;}
 
     for (int i = 0; i < _inputLength; i++) {

@@ -1,25 +1,28 @@
 /*
 
-  Perceptron example
+Perceptron example
 
-  Hardware: Arduino Nano BLE Sense
+Hardware: Arduino Nano BLE Sense
 
-  Usage: Follow the prompts in the Serial Monitor and show two objects of different colors to the color sensor onboard the Arduino.
-  The sketch will train a perceptron using these examples, and then classify objects you show it in the future.
+Usage: Follow the prompts in the Serial Monitor and show two objects of different colors to the color sensor onboard the Arduino.
+The sketch will train a perceptron using these examples, and then classify objects you show it in the future.
+
+The color sensor works better in a well lit area
 
 */
 
 #include <Arduino_APDS9960.h>
 #include <Arduino_Perceptron.h>
 
-const int   NUM_INPUTS          = 3;     // Classifier input is color sensor data; red, green and blue levels
+const int   NUM_INPUTS          = 3;     // Red, green and blue
 const int   CLASSES             = 2;     // The perceptron only has 2 possible classes
-const int   EXAMPLES            = 30;   // Number of samples for each object
-const int   MAX_EPOCHS          = 100;   // Maximum training iterations
+const int   EXAMPLES            = 30;    // Number of samples for each object
+const int   NUM_EPOCHS          = 100;   // Maximum training iterations
 const float LEARNING_RATE       = 0.001; // Perceptron learning rate
 const int   THRESHOLD           = 5;     // Color sensor light threshold
 
-float       color[NUM_INPUTS];
+float       input[NUM_INPUTS];
+float       weights[NUM_INPUTS+1];       // Weights for each color input + the bias
 String      label[CLASSES] = {"object A", "object B"};
 
 Perceptron  perceptron(NUM_INPUTS, LEARNING_RATE);
@@ -29,29 +32,26 @@ void setup() {
   while (!Serial);
 
   if (!APDS.begin()) {
-    Serial.println("Failled to initialized APDS!");
+    Serial.println("Failed to initialize APDS color sensor!");
     while (1);
   }
 
   Serial.println("Arduino perceptron");
 
-  // Get color samples for our two objects
-  // -------------------------------------
-  for (int output = 0; output < 2; output ++) {
+  // Get example color data
+  // ----------------------
+  for (int thisClass = 0; thisClass <= 1; thisClass++) {
 
     Serial.print("Show me ");
-    Serial.println(label[output]);
+    Serial.println(label[thisClass]);
 
     // Wait for the object to move away again
     while (!APDS.proximityAvailable() || APDS.readProximity() == 0) {}
 
+    // Get n color samples from the object
     for (int n = 0; n < EXAMPLES; n++) {
-
-      // Sample object color - perceptron input
-      readColor(color);
-
-      // Add example color to the perceptron training set
-      perceptron.addExample(color, output);
+      readColor(input); // red, green and blue
+      perceptron.addExample(input, thisClass); // Add to training set
     }
   }
 
@@ -64,9 +64,8 @@ void setup() {
   Serial.print("Start weights:");
   printWeights();
 
-  while (epoch < MAX_EPOCHS && accuracy < 0.99) {
+  for (int epoch = 0; epoch < NUM_EPOCHS; epoch++) {
     accuracy = perceptron.train();
-    epoch++;
     Serial.print("Accuracy: ");
     Serial.println(accuracy);
   }
@@ -74,13 +73,12 @@ void setup() {
   Serial.print("End weights:");
   printWeights();
 
-
   Serial.println("Training complete\n");
 }
 
 
-  // Classify objects shown
-  // ----------------------
+// Classify objects shown
+// ----------------------
 void loop() {
 
   int output;
@@ -90,52 +88,47 @@ void loop() {
 
   Serial.println("Let me guess your object");
 
-  // Wait for an object then read its color
-  readColor(color);
+  readColor(input);
 
-  // CLassify the object using the perceptron
-  output = perceptron.classify(color);
+  output = perceptron.classify(input);
 
   Serial.print("You showed me ");
   Serial.println(label[output]);
 }
 
 
-void printWeights() {
-  float weights[NUM_INPUTS];
-  perceptron.getWeights(weights);
-
-  Serial.print(weights[0]);
-  Serial.print(",");
-  Serial.print(weights[1]);
-  Serial.print(",");
-  Serial.println(weights[2]);
-}
-
 void readColor(float color[]) {
-  int red, green, blue, proximity, colorTotal = 0;
+  int red, green, blue;
 
-  // Wait until we have a color bright enough
-  while (colorTotal < THRESHOLD) {
-
-    // Sample if color is available and object is close
+  // Loop until we have a color sample bright enough
+  while (red+green+blue < THRESHOLD) {
+    // Sample if color sensor is available and the object is close
     if (APDS.colorAvailable() && APDS.proximityAvailable() && APDS.readProximity() == 0) {
-
-      // Read color and proximity
       APDS.readColor(red, green, blue);
-      colorTotal = (red + green + blue);
     }
   }
 
-  // Normalise the color sample data and put it in the classifier input array
-  color[0] = (float)red / colorTotal;
-  color[1] = (float)green / colorTotal;
-  color[2] = (float)blue / colorTotal;
+  // Put color sample data in input array
+  color[0] = (float)red;
+  color[1] = (float)green;
+  color[2] = (float)blue;
 
   // Print the red, green and blue values
-  Serial.print(color[0]);
-  Serial.print(",");
-  Serial.print(color[1]);
-  Serial.print(",");
-  Serial.println(color[2]);
+  printArray(color,NUM_INPUTS);
+}
+
+
+void printWeights() {
+  perceptron.getWeights(weights,NUM_INPUTS+1); // input weights plus the bias
+  printArray(weights,NUM_INPUTS+1);
+}
+
+
+void printArray(float myArray[], int length) {
+  Serial.print(myArray[0]);
+  for (int n = 1; n < length; n++) {
+    Serial.print(",");
+    Serial.print(myArray[n]);
+  }
+  Serial.println();
 }
