@@ -13,6 +13,7 @@ Perceptron	KEYWORD1
 
 addExample	KEYWORD2
 classify	KEYWORD2
+getWeights	KEYWORD2
 
 clearAllClasses	KEYWORD2
 

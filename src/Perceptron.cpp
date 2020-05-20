@@ -21,14 +21,14 @@
 #include "Perceptron.h"
 #include "utility/PerceptronNode.h"
 
-Perceptron::Perceptron(int inputLength, float learningRate) :
+Perceptron::Perceptron(const int inputLength, float learningRate) :
   _inputLength(inputLength),
   _learningRate(learningRate),
   _weights(new float[_inputLength]),
   _examples(NULL)
 {
   for (int i = 0; i < _inputLength; i++) {
-    _weights[i] = random(-1, 1);
+  _weights[i] = (2.0*rand()/RAND_MAX)-1;;
   }
 }
 
@@ -71,8 +71,14 @@ int Perceptron::classify(const float input[])
 
     // Activation function
     if (sum > 0) return 1;
-    else return -1;
+    else return 0;
 
+}
+
+void Perceptron::getWeights(float * weightArray){
+  for (int i = 0; i < _inputLength; i++) {
+    weightArray[i] = _weights[i];
+  }
 }
 
 float Perceptron::train()
@@ -86,13 +92,13 @@ float Perceptron::train()
 
     float inputs[_inputLength];
 
-
     for (int i = 0; i < _inputLength; i++) {
       inputs[i] = node->input(i);
     }
 
     int guess = classify(inputs);
     float error = node->class_() - guess;
+
     if (error==0) {correct++;}
 
     for (int i = 0; i < _inputLength; i++) {
