@@ -1,5 +1,5 @@
 /*
-  This file is part of the Arduino_KNN library.
+  This file is part of the Arduino_Perceptron library.
   Copyright (c) 2020 Arduino SA. All rights reserved.
 
   This library is free software; you can redistribute it and/or

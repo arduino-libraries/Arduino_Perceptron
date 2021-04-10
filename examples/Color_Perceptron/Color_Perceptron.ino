@@ -1,5 +1,4 @@
 /*
-
 Perceptron example
 
 Hardware: Arduino Nano BLE Sense
@@ -8,7 +7,6 @@ Usage: Follow the prompts in the Serial Monitor and show two objects of differen
 The sketch will train a perceptron using these examples, and then classify objects you show it in the future.
 
 The color sensor works better in a well lit area
-
 */
 
 #include <Arduino_APDS9960.h>
